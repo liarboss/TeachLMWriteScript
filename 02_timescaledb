@@ -1,0 +1,108 @@
+1. 创建标准表
+    CREATE TABLE conditions (
+      time        TIMESTAMPTZ       NOT NULL,
+      location    TEXT              NOT NULL,
+      temperature DOUBLE PRECISION  NULL,
+      humidity    DOUBLE PRECISION  NULL
+    );
+
+
+2. 将标准表转换成超表，将时间字段作为分片字段
+
+    SELECT create_hypertable('conditions', 'time');
+
+3. 操作超表，跟普通数据库操作一样
+
+    插入与查询
+    INSERT INTO conditions(time, location, temperature, humidity) VALUES (NOW(), 'office', 70.0, 50.0);
+    SELECT * FROM conditions ORDER BY time DESC LIMIT 100;
+
+    修改超级表
+    ALTER TABLE conditions ADD COLUMN humidity DOUBLE PRECISION NULL;
+
+    删除超表
+    DROP TABLE conditions;
+
+
+4. 通过chunk_time_interval在创建超表时进行设置来显式配置时间间隔
+    SELECT create_hypertable(‘conditions’, ‘time’, chunk_time_interval => 86400000000);
+    SELECT create_hypertable(‘conditions’, ‘time’, chunk_time_interval => interval ‘1 day’)：指定块的覆盖时间是1天
+
+5. 创建超表之后，可以通过调用更改用于新块的间隔set_chunk_time_interval
+    SELECT set_chunk_time_interval(‘conditions’, interval ‘24 hours’);
+    SELECT set_chunk_time_interval(‘conditions’, 86400000000);
+
+6. 创建索引
+    CREATE INDEX ON conditions (location, time DESC);
+
+7. 一系列操作
+    添加约束
+    1.约束某个字段值得范围
+    2.某个字段外键约束
+    3.将两个字段设为主键
+    CREATE TABLE conditions (
+        time       TIMESTAMPTZ,
+        temp       FLOAT NOT NULL,
+        device_id  INTEGER CHECK (device_id > 0),
+        location   INTEGER REFERENCES locations (id),
+        PRIMARY KEY(time, device_id)
+    );
+    SELECT create_hypertable('conditions', 'time');
+
+    创建Json类型表字段
+    CREATE TABLE metrics (
+      time TIMESTAMPTZ,
+      user_id INT,
+      device_id INT,
+      data JSONB
+    );
+
+    插入数据
+    在插入语句时使用ON CONFLICT不执行任何操作：
+    INSERT INTO conditions
+      VALUES ('2017-07-28 11:42:42.846621+00', 'office', 70.1, 50.0)
+      ON CONFLICT DO NOTHING;
+    在插入语句时更新现有数据：
+
+    INSERT INTO conditions
+      VALUES ('2017-07-28 11:42:42.846621+00', 'office', 70.2, 50.1)
+      ON CONFLICT (time, location) DO UPDATE
+        SET temperature = excluded.temperature,
+            humidity = excluded.humidity;
+    使用ON CONFLICT的好处，当批量插入数据时，使用ON CONFLICT，整个事务不会失败，仅仅只是跳过有冲突的行。
+
+    INSERT INTO conditions
+      VALUES
+        (NOW(), 'office', 70.0, 50.0),
+        (NOW(), 'basement', 66.5, 60.0),
+        (NOW(), 'garage', 77.0, 65.2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
