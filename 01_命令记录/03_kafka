@@ -1,0 +1,42 @@
+1. 创建消费者
+kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic my_topic --from-beginning
+
+2. 查看所有topic
+kafka-topics.sh --list --zookeeper 127.0.0.1:2181
+
+3. 删除topic
+kafka-topics.sh --delete --zookeeper 127.0.0.1:2181 --topic my_topic
+
+4. 查看某个group的偏移量
+kafka-consumer-groups.sh  --bootstrap-server 127.0.0.1:9092 --group my-group --describe
+
+5. 查看topic的详细信息
+kafka-topics.sh --describe --zookeeper 127.0.0.1:2181
+
+6. 修改某个topic的分区数量
+kafka-topics.sh --alter --zookeeper 127.0.0.1:9092 --topic my_topic --partitions 12
+
+7. 测试kafka生产者的吞吐率
+kafka-producer-perf-test.sh --topic test_perf --num-records 1000 --record-size 10  --throughput 20 --producer-props bootstrap.servers=127.0.0.1:9092
+
+8. 创建topic
+kafka-topics.sh --create --zookeeper 127.0.0.1:2181 --replication-factor 2 --partitions 12 --topic my_topic
+
+9. kafka新增broker,分区重分配
+kafka-reassign-partitions.sh --zookeeper 127.0.0.1:2181 --reassignment-json-file ./replication.json --execute
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

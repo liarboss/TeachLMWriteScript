@@ -1,0 +1,17 @@
+1. 启动一个镜像
+docker run hello-world
+
+2. 查看docker的运行状态
+docker stats
+
+
+
+
+
+
+
+
+
+
+
+

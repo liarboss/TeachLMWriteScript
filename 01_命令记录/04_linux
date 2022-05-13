@@ -1,0 +1,9 @@
+1. 批量删除flume所有进程
+kill -9 `ps -ef|grep flume | grep -v grep|awk '{print $2}'`
+ps -ef|grep flume|grep -v grep|cut -c 9-15|xargs kill -9
+
+
+2. 关闭ssh dns,解决ssh登陆卡的问题
+sed -i "s/#UseDNS yes/UseDNS no/"  /etc/ssh/sshd_config
+service sshd restart
+

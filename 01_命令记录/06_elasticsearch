@@ -1,0 +1,83 @@
+1. 删除某个索引
+curl -XDELETE 'http://127.0.0.1:9200/myindex'
+
+2. 查看某个索引的元数据
+curl -XGET 'http://127.0.0.1:9200/myindex/_mapping'
+
+3. 查看es索引shard的情况
+curl 'http://127.0.0.1:9200/_cat/shards?h=index,shard,prirep,state,unassigned.reason'
+
+4. 重新路由索引
+curl -XPOST 'http://127.0.0.1:9200/_cluster/reroute' -d '{
+  "commands" : [ {
+        "allocate_empty_primary" :
+            {
+              "index" : "myindex", "shard" : 0, "node" : "node1", "accept_data_loss" : true
+            }
+        }
+  ]
+}'
+
+5. 永久关闭es自动分配分片
+curl -XPUT 'http://127.0.0.1:9200/_cluster/settings' -d '
+{
+  "persistent": {
+    "cluster.routing.allocation.enable": "none"
+  }
+}'
+
+6. 查看es的集群配置
+curl -XGET 'http://127.0.0.1:9200/_cluster/settings'
+
+7. 根据一个索引重建另一个索引
+curl -XPOST 'http://127.0.0.1:9200/_reindex?pretty' -H 'Content-Type: application/json' -d'
+{
+  "source": {
+    "index": ".kibana-5"
+  },
+  "dest": {
+    "index": ".kibana-6-upgrade"
+  },
+  "script": {
+    "inline": "ctx._source = [ ctx._type : ctx._source ]; ctx._source.type = ctx._type; ctx._id = ctx._type + \":\" + ctx._id; ctx._type = \"doc\"; ",
+    "lang": "painless"
+  }
+}
+'
+
+8. 给索引创建别名
+curl -XPOST 'http://127.0.0.1:9200/_aliases?pretty' -H 'Content-Type: application/json' -d'
+{
+  "actions" : [
+    { "add":  { "index": ".kibana-6_8", "alias": ".kibana" } }
+  ]
+}
+'
+
+9. 临时开启索引主分片自动分配
+curl -XPUT 'http://127.0.0.1:9200/myindex/_settings' -d'
+{
+    "transient":{
+       "cluster.routing.allocation.enable" : "primaries"
+    }
+}
+'
+
+10. 永久设置集群的熔断器
+curl -H "Content-Type: application/json" -XPUT 'http://127.0.0.1:9200/_cluster/settings' -d '{
+  "persistent": {
+    "indices.breaker.*": null
+  }
+}'
+
+11. 开启stale组的索引的自动分配
+curl -XPUT "http://127.0.0.1:9200/myindex/_settings" -d'
+{
+    "index.routing.allocation.include.group" : "stale"
+}'
+
+
+
+
+
+
