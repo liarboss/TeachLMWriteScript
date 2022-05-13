@@ -7,3 +7,23 @@ ps -ef|grep flume|grep -v grep|cut -c 9-15|xargs kill -9
 sed -i "s/#UseDNS yes/UseDNS no/"  /etc/ssh/sshd_config
 service sshd restart
 
+
+3. 关闭防火墙
+systemctl stop firewalld.service
+systemctl disable firewalld.service
+firewall-cmd --state
+
+
+4. 安装supervisor
+1. 环境搭建
+yum install -y epel-release
+yum install -y supervisor
+systemctl enable supervisord # 开机自启动
+systemctl start supervisord # 启动supervisord服务
+
+systemctl status supervisord # 查看supervisord服务状态
+ps -ef|grep supervisord # 查看是否存在supervisord进程
+
+# 修改supervisor参数优化
+minfds=65535                 ; (min. avail startup file descriptors;default 1024)
+minprocs=10000                ; (min. avail process descriptors;default 200)
